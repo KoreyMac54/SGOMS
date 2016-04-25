@@ -1,3 +1,6 @@
+#note that for this model to run, world_size and number_of_agents must be set to non 0 values, 
+#and the scripts must have access to the CCMsuite library (included in this repo), created by Terry Stewart & Rob West
+
 world_size=0
 world_x_range=world_size
 world_y_range=world_size
@@ -54,6 +57,7 @@ class Environment(ccm.Model):        # items in the environment look and act lik
             prepping_world = False
 
     agent_list = []
+
 
 class MotorModule(ccm.ProductionSystem):     # create a motor module do the actions 
     #directions: 0 = up, 1 = right, 2 = down, 3 = left
@@ -265,7 +269,7 @@ class Top_Down_Vision_Module(ccm.ProductionSystem):
         for square in self.parent.line_of_sight:
             if square.occupant == 'goal':
                 self.parent.visual_buffer.set('goal:visible')
-            elif square.occupied == '1':
+            elif square.occupant == 'monster' or square.occupant == 'bunny':
                 self.parent.visual_buffer.set(square)
 
 
@@ -287,16 +291,16 @@ class Top_Down_Vision_Module(ccm.ProductionSystem):
         self.parent.top_down_vision.check_goal()
 
 class Bottom_Up_Vision_Module(ccm.ProductionSystem):
-    
-    def monsterSpotting(DMbuffer='planning_unit:!kill_monster', visual_buffer='occupant:monster', DM='busy:False'):
-        pass#print 'initiating monster slaying protocol'
+    #production_time = 0.01
+    def monsterSpotting(DMbuffer='planning_unit:!kill_monster', visual_buffer='occupant:monster', DM='busy:False', unit_task_buffer=''):
         pass#print self.parent.instance_name, 'initiating monster slaying protocol'
         DM.request('planning_unit:kill_monster')
         context_buffer.set('last_action:none')
         unit_task_buffer.clear()
+
     def bunnySpotting(DMbuffer='planning_unit:!kill_monster', visual_buffer='occupant:bunny', DM='busy:False', unit_task_buffer=''):
-        print 'bunny spotted; ignoring it'
-        print self.parent.instance_name, 'ignoring bunny'
+        pass#print 'bunny spotted; ignoring it'
+        pass#print self.parent.instance_name, 'ignoring bunny'
         DM.request('planning_unit:wander')
         visual_buffer.clear()
         context_buffer.set('last_action:none')
@@ -391,7 +395,7 @@ class MyAgent(ACTR):
         pass#print 'planning unit', planning_unit, 'finished'
         context_buffer.set('last_action:none')
         unit_task_buffer.clear()
-        DM.request('planning_unit:!kill_monster')
+        DM.request('planning_unit:?')
         ##fix
 
 #sequential navigation unit tasks
@@ -430,6 +434,7 @@ class MyAgent(ACTR):
                     pass#print self.instance_name, 'preparing to engage enemey'
                     unit_task_buffer.clear()
                     context_buffer.set('last_action:ready')
+                    continue
         if all(s.occupant != 'monster' for s in self.line_of_sight):
             pass#print 'no monsters here; passing on ready'
             DM.request('planning_unit:!kill_monster')
@@ -494,5 +499,7 @@ for a,i in enumerate(range(number_of_agents)):
 
 #ccm.log_everything(env)
 env.run()
-
+# for s in env.squares:
+#     pass#print s.occupant
+# exit()
 ccm.finished()  
