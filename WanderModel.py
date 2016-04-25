@@ -1,3 +1,6 @@
+#note that for this model to run, world_size and number_of_agents must be set to non 0 values, 
+#and the scripts must have access to the CCMsuite library (included in this repo), created by Terry Stewart & Rob West
+
 world_size=0
 world_x_range=world_size
 world_y_range=world_size
